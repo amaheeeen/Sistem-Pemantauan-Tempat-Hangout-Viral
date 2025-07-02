@@ -18,7 +18,7 @@ Your project is live at:
 
 ## Build your app
 
-If you want to check how the website build :
+If you want to check how the website works :
 
 https://v0-kalcer-id.vercel.app/
 
