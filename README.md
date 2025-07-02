@@ -18,6 +18,10 @@ Your project is live at:
 
 ## Build your app
 
+If you want to check how the website build :
+
+https://v0.dev/chat/kalcer-id-0QnzkDimK5b?b=b_PHsiedgA3qN
+
 Continue building your app on:
 
 **[https://v0.dev/chat/projects/8I0PZQRZ5A2](https://v0.dev/chat/projects/8I0PZQRZ5A2)**
