@@ -20,7 +20,7 @@ Your project is live at:
 
 If you want to check how the website build :
 
-https://v0.dev/chat/kalcer-id-0QnzkDimK5b?b=b_PHsiedgA3qN
+https://v0-kalcer-id.vercel.app/
 
 Continue building your app on:
 
