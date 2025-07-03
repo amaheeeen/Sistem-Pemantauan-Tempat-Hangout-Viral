@@ -14,7 +14,7 @@ Any changes you make to your deployed app will be automatically pushed to this r
 
 fidn our project as a preview here :
 
-**[https://v0-kalcer-id.vercel.app/)**
+**https://v0-kalcer-id.vercel.app/**
 
 ## Deployment
 
