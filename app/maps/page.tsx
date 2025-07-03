@@ -1,66 +1,76 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useMemo } from "react"
 import { Card, CardContent } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
-import { Star, MapPin, Search, Filter } from "lucide-react"
+import { Star, MapPin, Search, Phone, Globe, Clock } from "lucide-react"
+import type { FilterOptions, Place } from "@/types/filters"
+import { filterPlaces, getRecommendations, getPriceLabel, getPersonalityColor } from "@/utils/filter-utils"
+import { placesData } from "@/data/places-data"
+import FilterPanel from "@/components/filter-panel"
+import RecommendationPanel from "@/components/recommendation-panel"
 
-const mapPlaces = [
-  {
-    id: 1,
-    name: "Kurasu Coffee",
-    category: "Cafe",
-    rating: 4.8,
-    reviews: 324,
-    image: "/placeholder.svg?height=200&width=300",
-    description: "Cozy Japanese-style coffee shop",
-    location: "Kemang, Jakarta Selatan",
-    coordinates: { lat: -6.2615, lng: 106.8106 },
-  },
-  {
-    id: 2,
-    name: "Lucky Cat",
-    category: "Restaurant",
-    rating: 4.6,
-    reviews: 189,
-    image: "/placeholder.svg?height=200&width=300",
-    description: "Asian fusion with cat theme",
-    location: "Senopati, Jakarta Selatan",
-    coordinates: { lat: -6.2297, lng: 106.8253 },
-  },
-  {
-    id: 3,
-    name: "Taman Langsat",
-    category: "Park",
-    rating: 4.4,
-    reviews: 156,
-    image: "/placeholder.svg?height=200&width=300",
-    description: "Hidden gem park for hangouts",
-    location: "Kebayoran Baru, Jakarta Selatan",
-    coordinates: { lat: -6.2383, lng: 106.7934 },
-  },
-]
-
-const categories = ["All", "Cafe", "Restaurant", "Park", "Mall", "Bar"]
+const initialFilters: FilterOptions = {
+  categories: [],
+  facilities: [],
+  viralityRange: [0, 100],
+  priceRange: [1, 4],
+  personalityTypes: [],
+}
 
 export default function MapsPage() {
-  const [selectedCategory, setSelectedCategory] = useState("All")
   const [searchQuery, setSearchQuery] = useState("")
-  const [selectedPlace, setSelectedPlace] = useState<(typeof mapPlaces)[0] | null>(null)
+  const [selectedPlace, setSelectedPlace] = useState<Place | null>(null)
+  const [filters, setFilters] = useState<FilterOptions>(initialFilters)
 
-  const filteredPlaces = mapPlaces.filter((place) => {
-    const matchesCategory = selectedCategory === "All" || place.category === selectedCategory
-    const matchesSearch = place.name.toLowerCase().includes(searchQuery.toLowerCase())
-    return matchesCategory && matchesSearch
-  })
+  // Filter and search places
+  const filteredPlaces = useMemo(() => {
+    let places = filterPlaces(placesData, filters)
+
+    if (searchQuery) {
+      places = places.filter(
+        (place) =>
+          place.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+          place.location.toLowerCase().includes(searchQuery.toLowerCase()) ||
+          place.description.toLowerCase().includes(searchQuery.toLowerCase()),
+      )
+    }
+
+    return places
+  }, [filters, searchQuery])
+
+  // Get recommendations based on current filters
+  const recommendations = useMemo(() => {
+    return getRecommendations(
+      placesData,
+      {
+        category: filters.categories[0],
+        facilities: filters.facilities,
+        minViralityScore: filters.viralityRange[0],
+        maxViralityScore: filters.viralityRange[1],
+        minPrice: filters.priceRange[0],
+        maxPrice: filters.priceRange[1],
+        personalityType: filters.personalityTypes[0],
+      },
+      4,
+    )
+  }, [filters])
+
+  const handleClearFilters = () => {
+    setFilters(initialFilters)
+  }
+
+  const handlePlaceSelect = (place: Place) => {
+    setSelectedPlace(place)
+  }
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      <div className="flex flex-col lg:flex-row h-screen">
+    <div className="min-h-screen bg-light-gray">
+      <div className="flex flex-col xl:flex-row h-screen">
         {/* Sidebar */}
-        <div className="w-full lg:w-1/3 bg-white border-r border-gray-200 overflow-y-auto">
+        <div className="w-full xl:w-1/3 bg-white border-r border-gray-200 overflow-y-auto">
           <div className="p-6">
             <h1 className="text-2xl font-bold text-gray-900 mb-6">Maps Hangout Spots</h1>
 
@@ -76,29 +86,21 @@ export default function MapsPage() {
               />
             </div>
 
-            {/* Category Filter */}
+            {/* Filter Panel */}
             <div className="mb-6">
-              <div className="flex items-center mb-3">
-                <Filter className="w-5 h-5 text-gray-600 mr-2" />
-                <span className="font-medium text-gray-900">Kategori</span>
-              </div>
-              <div className="flex flex-wrap gap-2">
-                {categories.map((category) => (
-                  <Button
-                    key={category}
-                    variant={selectedCategory === category ? "default" : "outline"}
-                    size="sm"
-                    onClick={() => setSelectedCategory(category)}
-                    className={
-                      selectedCategory === category
-                        ? "bg-dark-gray text-light-gray"
-                        : "border-gray-300 text-gray-700 hover:bg-gray-50"
-                    }
-                  >
-                    {category}
-                  </Button>
-                ))}
-              </div>
+              <FilterPanel filters={filters} onFiltersChange={setFilters} onClearFilters={handleClearFilters} />
+            </div>
+
+            {/* Recommendation Panel */}
+            <div className="mb-6">
+              <RecommendationPanel recommendations={recommendations} onPlaceSelect={handlePlaceSelect} />
+            </div>
+
+            {/* Results Count */}
+            <div className="mb-4">
+              <p className="text-sm text-gray-600">
+                Menampilkan {filteredPlaces.length} tempat dari {placesData.length} total
+              </p>
             </div>
 
             {/* Places List */}
@@ -130,22 +132,53 @@ export default function MapsPage() {
                         </div>
                         <h3 className="font-semibold text-gray-900 mb-1">{place.name}</h3>
                         <p className="text-sm text-gray-600 mb-2">{place.description}</p>
-                        <div className="flex items-center text-gray-500">
+
+                        <div className="flex items-center text-gray-500 mb-2">
                           <MapPin className="w-3 h-3 mr-1" />
                           <span className="text-xs">{place.location}</span>
+                        </div>
+
+                        <div className="flex items-center justify-between">
+                          <div className="flex items-center space-x-2">
+                            <Badge variant="outline" className="text-xs">
+                              {getPriceLabel(place.priceRange)}
+                            </Badge>
+                            <span className="text-xs text-blue-gray font-medium">Viral: {place.viralityScore}</span>
+                          </div>
+                        </div>
+
+                        <div className="flex flex-wrap gap-1 mt-2">
+                          {place.personalityMatch.map((personality) => (
+                            <Badge
+                              key={personality}
+                              className={`text-xs ${getPersonalityColor(personality)}`}
+                              variant="secondary"
+                            >
+                              {personality}
+                            </Badge>
+                          ))}
                         </div>
                       </div>
                     </div>
                   </CardContent>
                 </Card>
               ))}
+
+              {filteredPlaces.length === 0 && (
+                <div className="text-center py-8">
+                  <p className="text-gray-500">Tidak ada tempat yang sesuai dengan filter yang dipilih.</p>
+                  <Button variant="outline" onClick={handleClearFilters} className="mt-4 bg-transparent">
+                    Reset Filter
+                  </Button>
+                </div>
+              )}
             </div>
           </div>
         </div>
 
         {/* Map Area */}
         <div className="flex-1 relative">
-          <div className="w-full h-full bg-gradient-to-br from-purple-100 to-pink-100 flex items-center justify-center">
+          <div className="w-full h-full bg-gradient-to-br from-medium-gray to-light-gray flex items-center justify-center">
             <div className="text-center">
               <MapPin className="w-16 h-16 text-dark-gray mx-auto mb-4" />
               <h3 className="text-xl font-semibold text-gray-900 mb-2">Interactive Map</h3>
@@ -164,14 +197,15 @@ export default function MapsPage() {
 
           {/* Selected Place Detail */}
           {selectedPlace && (
-            <div className="absolute bottom-4 left-4 right-4 lg:right-auto lg:w-80">
+            <div className="absolute bottom-4 left-4 right-4 xl:right-auto xl:w-96">
               <Card className="bg-white shadow-lg">
                 <CardContent className="p-4">
                   <img
                     src={selectedPlace.image || "/placeholder.svg"}
                     alt={selectedPlace.name}
-                    className="w-full h-32 object-cover rounded-lg mb-3"
+                    className="w-full h-40 object-cover rounded-lg mb-3"
                   />
+
                   <div className="flex items-center justify-between mb-2">
                     <Badge variant="secondary">{selectedPlace.category}</Badge>
                     <div className="flex items-center space-x-1">
@@ -180,12 +214,74 @@ export default function MapsPage() {
                       <span className="text-gray-500">({selectedPlace.reviews})</span>
                     </div>
                   </div>
+
                   <h3 className="text-lg font-bold text-gray-900 mb-2">{selectedPlace.name}</h3>
-                  <p className="text-gray-600 mb-3">{selectedPlace.description}</p>
-                  <div className="flex items-center text-gray-500 mb-3">
-                    <MapPin className="w-4 h-4 mr-1" />
-                    <span className="text-sm">{selectedPlace.location}</span>
+                  <p className="text-gray-600 mb-3 text-sm">{selectedPlace.description}</p>
+
+                  <div className="space-y-2 mb-4">
+                    <div className="flex items-center text-gray-500">
+                      <MapPin className="w-4 h-4 mr-2" />
+                      <span className="text-sm">{selectedPlace.location}</span>
+                    </div>
+
+                    <div className="flex items-center text-gray-500">
+                      <Clock className="w-4 h-4 mr-2" />
+                      <span className="text-sm">{selectedPlace.openHours}</span>
+                    </div>
+
+                    {selectedPlace.phoneNumber && (
+                      <div className="flex items-center text-gray-500">
+                        <Phone className="w-4 h-4 mr-2" />
+                        <span className="text-sm">{selectedPlace.phoneNumber}</span>
+                      </div>
+                    )}
+
+                    {selectedPlace.website && (
+                      <div className="flex items-center text-gray-500">
+                        <Globe className="w-4 h-4 mr-2" />
+                        <span className="text-sm">{selectedPlace.website}</span>
+                      </div>
+                    )}
                   </div>
+
+                  <div className="flex items-center justify-between mb-3">
+                    <Badge variant="outline">{getPriceLabel(selectedPlace.priceRange)}</Badge>
+                    <span className="text-sm text-blue-gray font-medium">
+                      Viral Score: {selectedPlace.viralityScore}
+                    </span>
+                  </div>
+
+                  <div className="mb-3">
+                    <p className="text-xs text-gray-500 mb-1">Cocok untuk:</p>
+                    <div className="flex flex-wrap gap-1">
+                      {selectedPlace.personalityMatch.map((personality) => (
+                        <Badge
+                          key={personality}
+                          className={`text-xs ${getPersonalityColor(personality)}`}
+                          variant="secondary"
+                        >
+                          {personality}
+                        </Badge>
+                      ))}
+                    </div>
+                  </div>
+
+                  <div className="mb-4">
+                    <p className="text-xs text-gray-500 mb-1">Fasilitas:</p>
+                    <div className="flex flex-wrap gap-1">
+                      {selectedPlace.facilities.slice(0, 4).map((facility) => (
+                        <Badge key={facility} variant="outline" className="text-xs">
+                          {facility}
+                        </Badge>
+                      ))}
+                      {selectedPlace.facilities.length > 4 && (
+                        <Badge variant="outline" className="text-xs">
+                          +{selectedPlace.facilities.length - 4}
+                        </Badge>
+                      )}
+                    </div>
+                  </div>
+
                   <Button className="w-full bg-dark-gray hover:bg-blue-gray text-white">Navigasi ke Lokasi</Button>
                 </CardContent>
               </Card>
