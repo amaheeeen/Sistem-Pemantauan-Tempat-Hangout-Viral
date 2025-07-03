@@ -1,4 +1,4 @@
-# Sistem Pemantauan Tempat Hangout Viral di Jakarta Selatan 
+# Modern newsletter form
 
 *Automatically synced with your [v0.dev](https://v0.dev) deployments*
 
@@ -17,10 +17,6 @@ Your project is live at:
 **[https://vercel.com/farhankholid20-2406s-projects/v0-kalcer-id](https://vercel.com/farhankholid20-2406s-projects/v0-kalcer-id)**
 
 ## Build your app
-
-If you want to check how the website works :
-
-https://v0-kalcer-id.vercel.app/
 
 Continue building your app on:
 

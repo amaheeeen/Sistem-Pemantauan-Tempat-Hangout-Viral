@@ -4,19 +4,31 @@ import { MapPin, Users, Heart, Target } from "lucide-react"
 
 const teamMembers = [
   {
-    name: "Alex Rahman",
+    name: "Alphard Bintang Ananditto",
     role: "Founder & CEO",
     image: "/placeholder.svg?height=200&width=200",
     description: "Passionate about connecting people with amazing places in Jakarta Selatan.",
   },
   {
-    name: "Sarah Putri",
+    name: "Farhan Kholid",
     role: "Head of Community",
     image: "/placeholder.svg?height=200&width=200",
     description: "Building vibrant communities around shared experiences and discoveries.",
   },
   {
-    name: "David Chen",
+    name: "Muhammad Ali Akbar",
+    role: "Lead Developer",
+    image: "/placeholder.svg?height=200&width=200",
+    description: "Creating seamless digital experiences for urban explorers.",
+  },
+  {
+    name: "Irfan Natanael",
+    role: "Lead Developer",
+    image: "/placeholder.svg?height=200&width=200",
+    description: "Creating seamless digital experiences for urban explorers.",
+  },
+  {
+    name: "Fathir Marwan Widodo",
     role: "Lead Developer",
     image: "/placeholder.svg?height=200&width=200",
     description: "Creating seamless digital experiences for urban explorers.",
